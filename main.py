@@ -9,13 +9,10 @@ import uvicorn
 
 app = FastAPI()
 
-# Create tables in the database
 Base.metadata.create_all(bind=engine)
 
-# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Pydantic models for requests
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -24,21 +21,19 @@ class UserCreate(BaseModel):
 class WeightCreate(BaseModel):
     username: str
     weight: float
-    date: date  # Date can be none and dynamically set
+    date: date  
 
     def __init__(self, **data):
         if 'date' not in data or data['date'] is None:
-            data['date'] = date.today()  # Set current date if not provided
+            data['date'] = date.today()  
         super().__init__(**data)
 
-# Utility functions
 def get_password_hash(password):
     return pwd_context.hash(password)
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# Endpoints
 @app.post("/create_user")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
@@ -55,12 +50,11 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @app.post("/new_weight")
 def new_weight(weight_data: WeightCreate, db: Session = Depends(get_db)):
     if not weight_data.date:
-        weight_data.date = date.today()  # Dynamically set current date if none provided
+        weight_data.date = date.today()  
     
-    db_weight = db.query(WeightEntry).filter(WeightEntry.username == weight_data.username, 
-                                             WeightEntry.date == weight_data.date).first()
+    db_weight = db.query(WeightEntry).filter(WeightEntry.username == weight_data.username,WeightEntry.date == weight_data.date).first()
     if db_weight:
-        db_weight.weight = weight_data.weight  # Update existing weight entry
+        db_weight.weight = weight_data.weight  
     else:
         new_entry = WeightEntry(username=weight_data.username, weight=weight_data.weight, date=weight_data.date)
         db.add(new_entry)
@@ -92,7 +86,7 @@ def calculate_bmi(username: str, db: Session = Depends(get_db)):
     if not user or not latest_entry:
         raise HTTPException(status_code=404, detail="User or weight entry not found")
     
-    height_m = user.height / 100  # Assuming height is in cm
+    height_m = user.height / 100  
     bmi = latest_entry.weight / (height_m ** 2)
     return {"username": username, "bmi": bmi}
 

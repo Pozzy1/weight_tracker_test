@@ -4,16 +4,15 @@ from datetime import date
 
 Base = declarative_base()
 
-# User model
+
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'users_of_sportsmen'
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)  # Password will be hashed
+    password = Column(String, nullable=False)  
     height = Column(Float, nullable=False)
 
-# Weight Entries model
 class WeightEntry(Base):
     __tablename__ = 'weight_entries'
 
